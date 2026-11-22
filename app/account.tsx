@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,7 +8,9 @@ import { useTheme } from '../src/theme';
 
 export default function Account() {
   const t = useTheme();
-  const { user, signOut } = useAuth();
+  const router = useRouter();
+  const { user, signOut, can } = useAuth();
+  const isAdmin = ['usuarios.gerenciar', 'perfis.gerenciar', 'solicitacoes.gerenciar', 'unidades.ver', 'parcelas.ver', 'documentos.ver'].some(can);
   return (
     <SafeAreaView edges={[]} style={{ flex: 1, backgroundColor: t.bg }}>
       <View style={{ padding: 16, gap: 12 }}>
@@ -15,6 +18,7 @@ export default function Account() {
           <Text style={{ color: t.text, fontSize: 18, fontWeight: '700' }}>{user?.name}</Text>
           <Text style={{ color: t.muted }}>{user?.email}</Text>
         </Card>
+        {isAdmin ? <Button title="Administração" onPress={() => router.push('/admin')} /> : null}
         <Button title="Sair" variant="ghost" onPress={() => void signOut()} />
       </View>
     </SafeAreaView>

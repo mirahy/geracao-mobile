@@ -5,12 +5,13 @@ créditos, faturas e custos do sistema [`mirahy/geracao`](https://github.com/mir
 
 ## Telas
 - **Login** — e-mail e senha; o servidor é fixo no build. O token (com expiração definida pela API) fica no armazenamento seguro; vencido, pede novo login.
-- **Painel** — KPIs (geração, injetado, autoconsumo, saldo de créditos, economia, resultado líquido, custos) e gráficos mensais; filtro por UC e período.
+- **Painel** — KPIs (geração, injetado, autoconsumo, saldo de créditos, economia, resultado líquido, custos) e gráficos mensais; filtro por UC e por **período**: últimos 6/12 meses, tudo, um **mês específico** ou um **intervalo** (de/até). O mesmo filtro existe na tela de cada unidade, em Geração e em Faturas.
 - **Unidades** — lista de UCs com saldo/custo/economia; toque para ver o dashboard individual.
-- **Geração** — histórico e lançamento da geração mensal das placas (requer permissão `geracao.editar`).
-- **Faturas** — faturas por UC (vencimento, pagamento, consumo, compensado, economia).
+- **Geração** — histórico, lançamento manual, **importação da planilha diária (.xlsx)** do inversor com tela de **revisão** dos meses incompletos/divergentes, e exclusão (segurar o item). Requer `geracao.editar`.
+- **Faturas** — faturas por UC (vencimento, pagamento, consumo, compensado, economia) e **importação de PDFs** (faturas e demonstrativos; requer `documentos.importar`).
 - **Rateio** — situação devido × pago por UC/mês, lista de pagamentos, lançamento manual ou por comprovante (PDF/imagem lido pela API), visualização do comprovante (baixado com o token e aberto no leitor/compartilhamento do aparelho) e exclusão (segurar o item). Requer `pagamentos.ver` / `pagamentos.editar`.
-- **Conta** (ícone 👤 no topo) — usuário e sair. Tema claro/escuro automático.
+- **Conta** (ícone 👤 no topo) — usuário, **Administração** e sair. Tema claro/escuro automático.
+- **Administração** (conforme as permissões do perfil): **Usuários** (cadastro, perfis, acesso por unidade, liberar unidade solicitada), **Perfis e permissões**, **Solicitações de acesso** (aprovar/recusar), **Unidades consumidoras**, **Parcelas das placas** e **Importações** (histórico e exclusão).
 
 ## Rodando
 ```bash

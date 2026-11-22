@@ -1,6 +1,10 @@
 import Constants from 'expo-constants';
 import { Directory, File, Paths } from 'expo-file-system';
-import type { Dashboard, Generation, Invoice, MonthOption, RateioPayment, RateioRow, ReceiptReading, Unit, User } from './types';
+import type {
+  AccessRequest, AdminUser, Dashboard, DocumentImportResult, Generation, ImportedDocument, Installment, InstallmentInput, Invoice,
+  MonthOption, PendingMonth, PermissionGroup, RateioPayment, RateioRow, ReceiptReading, Role, SpreadsheetImportResult, Unit, UnitFull,
+  UnitInput, User, UserInput,
+} from './types';
 
 export class ApiError extends Error {
   constructor(
@@ -27,6 +31,8 @@ export function buildQuery(params: Record<string, string | number | null | undef
     .join('&');
   return q ? `?${q}` : '';
 }
+
+type Range = { from?: string | null; to?: string | null };
 
 export class ApiClient {
   constructor(
@@ -79,14 +85,14 @@ export class ApiClient {
   dashboard(p: { unit_id?: number | null; from?: string | null; to?: string | null }) {
     return this.request<Dashboard>('GET', `/dashboard${buildQuery(p)}`);
   }
-  generations(unitId?: number | null) {
-    return this.request<{ data: Generation[] }>('GET', `/generations${buildQuery({ unit_id: unitId })}`);
+  generations(unitId?: number | null, range: Range = {}) {
+    return this.request<{ data: Generation[] }>('GET', `/generations${buildQuery({ unit_id: unitId, from: range.from, to: range.to })}`);
   }
   saveGeneration(p: { consumer_unit_id: number; reference_month: string; generated_kwh: number }) {
     return this.request<{ data: Generation }>('POST', '/generations', p);
   }
-  invoices(unitId?: number | null) {
-    return this.request<{ data: Invoice[] }>('GET', `/invoices${buildQuery({ unit_id: unitId })}`);
+  invoices(unitId?: number | null, range: Range = {}) {
+    return this.request<{ data: Invoice[] }>('GET', `/invoices${buildQuery({ unit_id: unitId, from: range.from, to: range.to })}`);
   }
   rateioSummary(unitId?: number | null) {
     return this.request<{ data: RateioRow[] }>('GET', `/rateio/summary${buildQuery({ unit_id: unitId })}`);
@@ -103,6 +109,98 @@ export class ApiClient {
   readReceipt(form: FormData) {
     return this.request<{ data: ReceiptReading }>('POST', '/rateio/receipts/read', form);
   }
+  // ---- geração: exclusão, importação da planilha diária e revisão
+  deleteGeneration(id: number) {
+    return this.request<null>('DELETE', `/generations/${id}`);
+  }
+  importSpreadsheet(form: FormData) {
+    return this.request<{ data: SpreadsheetImportResult }>('POST', '/generations/import', form);
+  }
+  pendingGenerations() {
+    return this.request<{ data: PendingMonth[] }>('GET', '/generations/pending');
+  }
+  resolveGenerations(p: { save: string[]; dismiss: string[] }) {
+    return this.request<{ data: { saved: number; dismissed: number } }>('POST', '/generations/resolve', p);
+  }
+
+  // ---- importação de faturas/demonstrativos (PDF)
+  documents(unitId?: number | null) {
+    return this.request<{ data: ImportedDocument[] }>('GET', `/documents${buildQuery({ unit_id: unitId })}`);
+  }
+  importDocuments(form: FormData) {
+    return this.request<{ data: DocumentImportResult }>('POST', '/documents/import', form);
+  }
+  deleteDocument(id: number) {
+    return this.request<null>('DELETE', `/documents/${id}`);
+  }
+
+  // ---- unidades consumidoras (cadastro)
+  unit(id: number) {
+    return this.request<{ data: UnitFull }>('GET', `/units/${id}`);
+  }
+  createUnit(p: UnitInput) {
+    return this.request<{ data: UnitFull }>('POST', '/units', p);
+  }
+  updateUnit(id: number, p: UnitInput) {
+    return this.request<{ data: UnitFull }>('PUT', `/units/${id}`, p);
+  }
+  deleteUnit(id: number) {
+    return this.request<null>('DELETE', `/units/${id}`);
+  }
+
+  // ---- administração
+  users() {
+    return this.request<{ data: AdminUser[] }>('GET', '/admin/users');
+  }
+  createUser(p: UserInput) {
+    return this.request<{ data: AdminUser }>('POST', '/admin/users', p);
+  }
+  updateUser(id: number, p: UserInput) {
+    return this.request<{ data: AdminUser }>('PUT', `/admin/users/${id}`, p);
+  }
+  deleteUser(id: number) {
+    return this.request<null>('DELETE', `/admin/users/${id}`);
+  }
+  grantRequestedUnit(id: number) {
+    return this.request<{ data: AdminUser }>('POST', `/admin/users/${id}/grant-requested-unit`);
+  }
+  roles() {
+    return this.request<{ data: Role[] }>('GET', '/admin/roles');
+  }
+  permissions() {
+    return this.request<{ data: PermissionGroup[] }>('GET', '/admin/permissions');
+  }
+  createRole(p: { name: string; permissions: string[] }) {
+    return this.request<{ data: Role }>('POST', '/admin/roles', p);
+  }
+  updateRole(id: number, p: { name: string; permissions: string[] }) {
+    return this.request<{ data: Role }>('PUT', `/admin/roles/${id}`, p);
+  }
+  deleteRole(id: number) {
+    return this.request<null>('DELETE', `/admin/roles/${id}`);
+  }
+  unitRequests(status?: string | null) {
+    return this.request<{ data: AccessRequest[] }>('GET', `/admin/unit-requests${buildQuery({ status })}`);
+  }
+  approveUnitRequest(id: number, canEdit: boolean) {
+    return this.request<{ data: AccessRequest }>('POST', `/admin/unit-requests/${id}/approve`, { can_edit: canEdit });
+  }
+  rejectUnitRequest(id: number, note: string | null) {
+    return this.request<{ data: AccessRequest }>('POST', `/admin/unit-requests/${id}/reject`, { note });
+  }
+  installments() {
+    return this.request<{ data: Installment[] }>('GET', '/admin/installments');
+  }
+  createInstallment(p: InstallmentInput) {
+    return this.request<{ data: Installment }>('POST', '/admin/installments', p);
+  }
+  updateInstallment(id: number, p: InstallmentInput) {
+    return this.request<{ data: Installment }>('PUT', `/admin/installments/${id}`, p);
+  }
+  deleteInstallment(id: number) {
+    return this.request<null>('DELETE', `/admin/installments/${id}`);
+  }
+
   /** Baixa o comprovante (rota autenticada) para o cache do aparelho e devolve o arquivo local. */
   async downloadReceipt(paymentId: number): Promise<File> {
     const dir = new Directory(Paths.cache, 'comprovantes', String(paymentId));

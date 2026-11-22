@@ -1,19 +1,46 @@
+import * as DocumentPicker from 'expo-document-picker';
 import React, { useState } from 'react';
-import { FlatList, Text, View } from 'react-native';
+import { Alert, FlatList, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UnitFilter } from '../../src/components/Filters';
-import { Card, State } from '../../src/components/ui';
+import { PeriodFilter } from '../../src/components/PeriodFilter';
+import { Button, Card, State, errorMessage } from '../../src/components/ui';
 import { fmtBrl, fmtDate, fmtKwh, monthLabel } from '../../src/lib/format';
 import { useAuth } from '../../src/lib/auth';
 import { useAsync } from '../../src/lib/useAsync';
+import { usePeriod } from '../../src/lib/usePeriod';
 import { useTheme } from '../../src/theme';
 
 export default function Invoices() {
   const t = useTheme();
-  const { api } = useAuth();
+  const { api, can } = useAuth();
   const [unitId, setUnitId] = useState<number | null>(null);
+  const [importing, setImporting] = useState(false);
+  const { period, setPeriod, months, range, ready } = usePeriod();
   const units = useAsync(() => api.units(), [api]);
-  const list = useAsync(() => api.invoices(unitId), [api, unitId]);
+  const list = useAsync(() => api.invoices(unitId, range), [api, unitId, range.from, range.to, ready]);
+
+  const importPdfs = async () => {
+    const res = await DocumentPicker.getDocumentAsync({ type: 'application/pdf', multiple: true, copyToCacheDirectory: true });
+    if (res.canceled || res.assets.length === 0) return;
+    const form = new FormData();
+    res.assets.forEach((f) => form.append('files[]', { uri: f.uri, name: f.name, type: 'application/pdf' } as unknown as Blob));
+    setImporting(true);
+    try {
+      const { data } = await api.importDocuments(form);
+      const lines = [
+        data.imported ? `${data.imported} arquivo(s) importado(s).` : null,
+        data.duplicates ? `${data.duplicates} já importado(s) antes (ignorados).` : null,
+        ...data.failures.map((f) => `Falha — ${f.file}: ${f.message ?? 'erro'}`),
+      ].filter(Boolean);
+      Alert.alert(data.failures.length ? 'Importação concluída com avisos' : 'Importação concluída', lines.join('\n') || 'Nada a importar.');
+      await list.reload();
+    } catch (e) {
+      Alert.alert('Não foi possível importar', errorMessage(e));
+    } finally {
+      setImporting(false);
+    }
+  };
 
   return (
     <SafeAreaView edges={[]} style={{ flex: 1, backgroundColor: t.bg }}>
@@ -26,6 +53,8 @@ export default function Invoices() {
         ListHeaderComponent={
           <View style={{ gap: 12 }}>
             <UnitFilter units={units.data?.data ?? []} value={unitId} onChange={setUnitId} />
+            <PeriodFilter value={period} onChange={setPeriod} months={months} />
+            {can('documentos.importar') ? <Button title="Importar faturas e demonstrativos (PDF)" onPress={importPdfs} loading={importing} /> : null}
             <State loading={list.loading && !list.data} error={list.error} onRetry={list.reload} />
           </View>
         }

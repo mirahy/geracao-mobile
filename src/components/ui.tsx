@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Switch, Text, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
 import { useTheme } from '../theme';
 
 export function Card({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
@@ -71,6 +71,65 @@ export function State({ loading, error, onRetry }: { loading: boolean; error: st
     );
   }
   return null;
+}
+
+export function Toggle({ label, hint, value, onChange }: { label: string; hint?: string; value: boolean; onChange: (v: boolean) => void }) {
+  const t = useTheme();
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      <View style={{ flex: 1 }}>
+        <Text style={{ color: t.text }}>{label}</Text>
+        {hint ? <Text style={{ color: t.muted, fontSize: 12 }}>{hint}</Text> : null}
+      </View>
+      <Switch value={value} onValueChange={onChange} trackColor={{ true: t.primary }} />
+    </View>
+  );
+}
+
+/** Escolha entre opções em chips: uma (single) ou várias (multi). */
+export function OptionChips<T extends string | number>({ label, options, value, onChange }: {
+  label?: string; options: { value: T; label: string }[]; value: T | null; onChange: (v: T) => void;
+}) {
+  const t = useTheme();
+  return (
+    <View style={{ gap: 6 }}>
+      {label ? <Text style={{ color: t.muted, fontSize: 13 }}>{label}</Text> : null}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 8 }}>
+        {options.map((o) => <Chip key={String(o.value)} label={o.label} active={value === o.value} onPress={() => onChange(o.value)} />)}
+      </View>
+    </View>
+  );
+}
+
+export function MultiChips<T extends string | number>({ label, options, value, onChange }: {
+  label?: string; options: { value: T; label: string }[]; value: T[]; onChange: (v: T[]) => void;
+}) {
+  const t = useTheme();
+  return (
+    <View style={{ gap: 6 }}>
+      {label ? <Text style={{ color: t.muted, fontSize: 13 }}>{label}</Text> : null}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 8 }}>
+        {options.map((o) => (
+          <Chip key={String(o.value)} label={o.label} active={value.includes(o.value)}
+            onPress={() => onChange(value.includes(o.value) ? value.filter((x) => x !== o.value) : [...value, o.value])} />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+/** Pede confirmação antes de uma ação destrutiva. */
+export function confirmDestructive(title: string, message: string, onConfirm: () => void, confirmLabel = 'Excluir') {
+  Alert.alert(title, message, [
+    { text: 'Cancelar', style: 'cancel' },
+    { text: confirmLabel, style: 'destructive', onPress: onConfirm },
+  ]);
+}
+
+/** Primeiro erro de validação da API (ou a mensagem) para exibir ao usuário. */
+export function errorMessage(e: unknown, fallback = 'Erro inesperado'): string {
+  const errors = (e as { errors?: Record<string, string[]> } | null)?.errors;
+  return Object.values(errors ?? {})[0]?.[0] ?? (e instanceof Error ? e.message : fallback);
 }
 
 const s = StyleSheet.create({
