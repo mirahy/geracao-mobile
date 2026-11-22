@@ -45,7 +45,11 @@
       "typedRoutes": false
     },
     "extra": {
-      "apiUrl": "https://geracao.igfinanca.com"
-    }
+      "apiUrl": "https://geracao.igfinanca.com",
+      "eas": {
+        "projectId": "acaa61d5-b7b6-4b2b-ab1c-dbe69964e62b"
+      }
+    },
+    "owner": "mirahy"
   }
 }
