@@ -1,4 +1,5 @@
 import * as DocumentPicker from 'expo-document-picker';
+import * as Sharing from 'expo-sharing';
 import React, { useState } from 'react';
 import { Alert, FlatList, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,9 +17,23 @@ export default function Invoices() {
   const { api, can } = useAuth();
   const [unitId, setUnitId] = useState<number | null>(null);
   const [importing, setImporting] = useState(false);
+  const [downloading, setDownloading] = useState<number | null>(null);
   const { period, setPeriod, months, range, ready } = usePeriod();
   const units = useAsync(() => api.units(), [api]);
   const list = useAsync(() => api.invoices(unitId, range), [api, unitId, range.from, range.to, ready]);
+
+  const downloadInvoice = async (id: number) => {
+    setDownloading(id);
+    try {
+      const file = await api.downloadInvoice(id);
+      if (!(await Sharing.isAvailableAsync())) throw new Error('Este aparelho não consegue abrir o arquivo.');
+      await Sharing.shareAsync(file.uri, { mimeType: 'application/pdf', dialogTitle: 'Fatura' });
+    } catch (e) {
+      Alert.alert('Fatura', errorMessage(e));
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   const importPdfs = async () => {
     const res = await DocumentPicker.getDocumentAsync({ type: 'application/pdf', multiple: true, copyToCacheDirectory: true });
@@ -67,6 +82,11 @@ export default function Invoices() {
             <Text style={{ color: t.muted }}>Vence {fmtDate(item.due_date)} · {item.paid_at ? `pago em ${fmtDate(item.paid_at)}` : 'em aberto'}</Text>
             <Text style={{ color: t.text }}>Consumo {fmtKwh(item.consumption_kwh)} · Compensado {fmtKwh(item.compensated_kwh)}</Text>
             <Text style={{ color: t.good }}>Economia {fmtBrl(item.savings)} · Saldo {fmtKwh(item.credit_balance_kwh)}</Text>
+            {item.has_file ? (
+              <View style={{ marginTop: 6 }}>
+                <Button title="Baixar fatura (PDF)" variant="ghost" onPress={() => void downloadInvoice(item.id)} loading={downloading === item.id} />
+              </View>
+            ) : null}
           </Card>
         )}
       />

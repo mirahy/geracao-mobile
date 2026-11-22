@@ -85,6 +85,7 @@ export interface Invoice {
   credit_balance_kwh: number;
   total_amount: number;
   savings: number;
+  has_file: boolean;
 }
 
 export interface MonthOption {

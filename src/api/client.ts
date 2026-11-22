@@ -215,19 +215,28 @@ export class ApiClient {
     return this.request<null>('DELETE', `/admin/installments/${id}`);
   }
 
-  /** Baixa o comprovante (rota autenticada) para o cache do aparelho e devolve o arquivo local. */
-  async downloadReceipt(paymentId: number): Promise<File> {
-    const dir = new Directory(Paths.cache, 'comprovantes', String(paymentId));
+  /** Baixa um arquivo de rota autenticada para o cache do aparelho e devolve o arquivo local. */
+  private async downloadFile(path: string, cacheDir: string[], notFound: string, failed: string): Promise<File> {
+    const dir = new Directory(Paths.cache, ...cacheDir);
     if (!dir.exists) dir.create({ intermediates: true });
     try {
-      return await File.downloadFileAsync(`${normalizeBaseUrl(this.baseUrl)}/api/v1/rateio/payments/${paymentId}/receipt`, dir, {
+      return await File.downloadFileAsync(`${normalizeBaseUrl(this.baseUrl)}/api/v1${path}`, dir, {
         idempotent: true,
         headers: { ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}) },
       });
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
       if (msg.includes('401')) this.onUnauthorized();
-      throw new ApiError(msg.includes('404') ? 'Comprovante não disponível.' : 'Não foi possível baixar o comprovante.', 0);
+      throw new ApiError(msg.includes('404') ? notFound : failed, 0);
     }
+  }
+
+  downloadReceipt(paymentId: number): Promise<File> {
+    return this.downloadFile(`/rateio/payments/${paymentId}/receipt`, ['comprovantes', String(paymentId)], 'Comprovante não disponível.', 'Não foi possível baixar o comprovante.');
+  }
+
+  /** PDF original da fatura importada. */
+  downloadInvoice(invoiceId: number): Promise<File> {
+    return this.downloadFile(`/invoices/${invoiceId}/file`, ['faturas', String(invoiceId)], 'O arquivo original desta fatura não está disponível.', 'Não foi possível baixar a fatura.');
   }
 }
