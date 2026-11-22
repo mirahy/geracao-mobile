@@ -1,4 +1,3 @@
-import * as Sharing from 'expo-sharing';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Alert, FlatList, Pressable, ScrollView, Text, View } from 'react-native';
@@ -10,6 +9,7 @@ import { UnitFilter } from '../../src/components/Filters';
 import { fmtBrl, fmtDate, monthLabel } from '../../src/lib/format';
 import { STATUS_LABEL, statusTone } from '../../src/lib/rateio';
 import { useAuth } from '../../src/lib/auth';
+import { openInReader } from '../../src/lib/openFile';
 import { useAsync } from '../../src/lib/useAsync';
 import { useTheme } from '../../src/theme';
 
@@ -42,9 +42,7 @@ export default function Rateio() {
   const openReceipt = async (p: RateioPayment) => {
     setOpening(p.id);
     try {
-      const file = await api.downloadReceipt(p.id);
-      if (!(await Sharing.isAvailableAsync())) throw new Error('Este aparelho não consegue abrir o arquivo.');
-      await Sharing.shareAsync(file.uri, { mimeType: file.type || undefined, dialogTitle: 'Comprovante' });
+      await openInReader(await api.downloadReceipt(p.id), { title: 'Comprovante' });
     } catch (e) {
       Alert.alert('Comprovante', e instanceof Error ? e.message : 'Erro inesperado');
     } finally {

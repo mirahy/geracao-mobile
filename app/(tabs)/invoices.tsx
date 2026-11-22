@@ -1,5 +1,4 @@
 import * as DocumentPicker from 'expo-document-picker';
-import * as Sharing from 'expo-sharing';
 import React, { useState } from 'react';
 import { Alert, FlatList, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,6 +7,7 @@ import { PeriodFilter } from '../../src/components/PeriodFilter';
 import { Button, Card, State, errorMessage } from '../../src/components/ui';
 import { fmtBrl, fmtDate, fmtKwh, monthLabel } from '../../src/lib/format';
 import { useAuth } from '../../src/lib/auth';
+import { openInReader } from '../../src/lib/openFile';
 import { useAsync } from '../../src/lib/useAsync';
 import { usePeriod } from '../../src/lib/usePeriod';
 import { useTheme } from '../../src/theme';
@@ -25,9 +25,7 @@ export default function Invoices() {
   const downloadInvoice = async (id: number) => {
     setDownloading(id);
     try {
-      const file = await api.downloadInvoice(id);
-      if (!(await Sharing.isAvailableAsync())) throw new Error('Este aparelho não consegue abrir o arquivo.');
-      await Sharing.shareAsync(file.uri, { mimeType: 'application/pdf', dialogTitle: 'Fatura' });
+      await openInReader(await api.downloadInvoice(id), { title: 'Fatura', mimeType: 'application/pdf' });
     } catch (e) {
       Alert.alert('Fatura', errorMessage(e));
     } finally {
@@ -84,7 +82,7 @@ export default function Invoices() {
             <Text style={{ color: t.good }}>Economia {fmtBrl(item.savings)} · Saldo {fmtKwh(item.credit_balance_kwh)}</Text>
             {item.has_file ? (
               <View style={{ marginTop: 6 }}>
-                <Button title="Baixar fatura (PDF)" variant="ghost" onPress={() => void downloadInvoice(item.id)} loading={downloading === item.id} />
+                <Button title="Abrir fatura (PDF)" variant="ghost" onPress={() => void downloadInvoice(item.id)} loading={downloading === item.id} />
               </View>
             ) : null}
           </Card>
