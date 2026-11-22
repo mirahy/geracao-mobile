@@ -45,7 +45,7 @@
       "typedRoutes": false
     },
     "extra": {
-      "apiUrl": "https://SEU-SERVIDOR.exemplo.com"
+      "apiUrl": "https://geracao.igfinanca.com"
     }
   }
 }
