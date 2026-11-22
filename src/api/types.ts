@@ -257,3 +257,38 @@ export interface InstallmentInput {
 }
 
 export type UnitInput = Omit<UnitFull, 'id' | 'formatted_uc'>;
+
+export type LogType = 'access' | 'view' | 'change';
+
+export interface ActivityEntry {
+  id: number;
+  type: LogType;
+  action: string | null;
+  description: string;
+  user_id: number | null;
+  user_name: string | null;
+  subject_type: string | null;
+  subject_id: number | null;
+  /** alteração: campo => [antes, depois] */
+  changes: Record<string, [unknown, unknown]>;
+  added: string[];
+  removed: string[];
+  channel: 'api' | 'panel' | 'console' | null;
+  ip: string | null;
+  created_at: string;
+}
+
+export interface LogsPage {
+  data: ActivityEntry[];
+  meta: { current_page: number; last_page: number; total: number };
+  users: { id: number; name: string }[];
+}
+
+export interface LogQuery {
+  type?: LogType | null;
+  user_id?: number | null;
+  from?: string | null;
+  to?: string | null;
+  search?: string | null;
+  page?: number;
+}

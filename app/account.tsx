@@ -10,7 +10,7 @@ export default function Account() {
   const t = useTheme();
   const router = useRouter();
   const { user, signOut, can, hasGenerator } = useAuth();
-  const isAdmin = ['usuarios.gerenciar', 'perfis.gerenciar', 'solicitacoes.gerenciar', 'unidades.ver', 'documentos.ver'].some((p) => can(p)) || (can('parcelas.ver') && hasGenerator);
+  const isAdmin = ['usuarios.gerenciar', 'perfis.gerenciar', 'solicitacoes.gerenciar', 'unidades.ver', 'documentos.ver', 'logs.ver'].some((p) => can(p)) || (can('parcelas.ver') && hasGenerator);
   return (
     <SafeAreaView edges={[]} style={{ flex: 1, backgroundColor: t.bg }}>
       <View style={{ padding: 16, gap: 12 }}>

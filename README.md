@@ -11,7 +11,7 @@ créditos, faturas e custos do sistema [`mirahy/geracao`](https://github.com/mir
 - **Faturas** — faturas por UC (vencimento, pagamento, consumo, compensado, economia) **baixar a fatura (PDF original)** para abrir ou compartilhar, e **importação de PDFs** (faturas e demonstrativos; requer `documentos.importar`).
 - **Rateio** — situação devido × pago por UC/mês, lista de pagamentos, lançamento manual ou por comprovante (PDF/imagem lido pela API), visualização do comprovante (baixado com o token e aberto no leitor/compartilhamento do aparelho) e exclusão (segurar o item). Requer `pagamentos.ver` / `pagamentos.editar`.
 - **Conta** (ícone 👤 no topo) — usuário, **Editar meu perfil** (nome, e-mail e troca de senha), **Administração** e sair. As abas e seções só aparecem para quem tem a permissão correspondente (Geração também exige alcançar uma unidade geradora). Tema claro/escuro automático.
-- **Administração** (conforme as permissões do perfil): **Usuários** (cadastro, perfis, acesso por unidade, liberar unidade solicitada), **Perfis e permissões**, **Solicitações de acesso** (aprovar/recusar, uma a uma ou **em lote**), **Unidades consumidoras**, **Parcelas das placas** e **Importações** (histórico e exclusão).
+- **Administração** (conforme as permissões do perfil): **Usuários** (cadastro, perfis, acesso por unidade, liberar unidade solicitada), **Perfis e permissões**, **Solicitações de acesso** (aprovar/recusar, uma a uma ou **em lote**), **Unidades consumidoras**, **Parcelas das placas** **Importações** (histórico e exclusão) e **Registro de atividades** (acessos, visualizações e alterações, com filtros por tipo, usuário, período e busca; requer `logs.ver`).
 
 ## Rodando
 ```bash

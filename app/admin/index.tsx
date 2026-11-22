@@ -12,6 +12,7 @@ const SECTIONS: { key: string; title: string; hint: string; href: Href; permissi
   { key: 'requests', title: 'Solicitações de acesso', hint: 'Aprovar ou recusar pedidos de unidades', href: '/admin/requests', permission: 'solicitacoes.gerenciar', icon: '🔑' },
   { key: 'units', title: 'Unidades consumidoras', hint: 'Cadastro de UCs geradoras e beneficiárias', href: '/admin/units', permission: 'unidades.ver', icon: '🏠' },
   { key: 'installments', title: 'Parcelas das placas', hint: 'Valor mensal pago pelas placas solares', href: '/admin/installments', permission: 'parcelas.ver', icon: '💰', generatorOnly: true },
+  { key: 'logs', title: 'Registro de atividades', hint: 'Acessos, visualizações e alterações', href: '/admin/logs', permission: 'logs.ver', icon: '📋' },
   { key: 'documents', title: 'Importações', hint: 'Faturas e demonstrativos importados (PDF)', href: '/admin/documents', permission: 'documentos.ver', icon: '📥' },
 ];
 

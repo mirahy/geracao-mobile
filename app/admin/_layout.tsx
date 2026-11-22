@@ -12,6 +12,7 @@ export default function AdminLayout() {
       <Stack.Screen name="requests" options={{ title: 'Solicitações de acesso' }} />
       <Stack.Screen name="units/index" options={{ title: 'Unidades consumidoras' }} />
       <Stack.Screen name="installments/index" options={{ title: 'Parcelas das placas' }} />
+      <Stack.Screen name="logs" options={{ title: 'Registro de atividades' }} />
       <Stack.Screen name="documents" options={{ title: 'Importações' }} />
     </Stack>
   );

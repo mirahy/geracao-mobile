@@ -3,7 +3,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 import type {
   AccessRequest, AdminUser, Dashboard, DocumentImportResult, Generation, ImportedDocument, Installment, InstallmentInput, Invoice,
   MonthOption, PendingMonth, PermissionGroup, RateioPayment, RateioRow, ReceiptReading, Role, SpreadsheetImportResult, Unit, UnitFull,
-  UnitInput, User, UserInput,
+  UnitInput, User, UserInput, LogQuery, LogsPage,
 } from './types';
 
 export class ApiError extends Error {
@@ -157,6 +157,11 @@ export class ApiClient {
   }
   deleteUnit(id: number) {
     return this.request<null>('DELETE', `/units/${id}`);
+  }
+
+  // ---- registro de atividades
+  logs(q: LogQuery) {
+    return this.request<LogsPage>('GET', `/logs${buildQuery({ ...q })}`);
   }
 
   // ---- administração
