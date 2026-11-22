@@ -10,13 +10,15 @@ escopo por unidade (`AccessibleUnitsScope`), então cada usuário só vê as UCs
 ```bash
 cd /caminho/do/geracao
 composer require laravel/sanctum
-php artisan install:api --no-interaction        # cria routes/api.php, publica migration dos tokens
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider" --no-interaction
 cp -r /caminho/do/geracao-mobile/backend/app/Http/Controllers/Api app/Http/Controllers/
 cp /caminho/do/geracao-mobile/backend/routes/api.php routes/api.php
-# adicionar o trait Laravel\Sanctum\HasApiTokens ao model App\Models\User
-php artisan migrate
+cp /caminho/do/geracao-mobile/backend/tests/Feature/MobileApiTest.php tests/Feature/
+# no model App\Models\User: adicionar o trait Laravel\Sanctum\HasApiTokens
+# em bootstrap/app.php, withRouting(): api: __DIR__.'/../routes/api.php',
+php artisan migrate && php artisan test
 ```
-Se `install:api` não registrar `routes/api.php` em `bootstrap/app.php`, adicione `api: __DIR__.'/../routes/api.php'` em `withRouting`.
+Verificado: com esses passos, `MobileApiTest` e a suíte existente do `geracao` passam.
 
 ## Endpoints (`/api/v1`)
 | Método | Rota | Descrição |
