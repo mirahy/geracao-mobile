@@ -62,7 +62,12 @@ export class ApiClient {
     }
     const json = res.status === 204 ? null : await res.json().catch(() => null);
     if (!res.ok) {
-      throw new ApiError(json?.message ?? `Erro ${res.status}`, res.status, json?.errors);
+      const outdated = res.status === 404 && /route .* could not be found/i.test(String(json?.message ?? ''));
+      throw new ApiError(
+        outdated ? 'O servidor ainda não tem esta função. Atualize o servidor (geracao) para a versão mais recente.' : (json?.message ?? `Erro ${res.status}`),
+        res.status,
+        json?.errors,
+      );
     }
     return json as T;
   }
