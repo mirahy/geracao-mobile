@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { Directory, File, Paths } from 'expo-file-system';
 import type { Dashboard, Generation, Invoice, MonthOption, RateioPayment, RateioRow, ReceiptReading, Unit, User } from './types';
 
 export class ApiError extends Error {
@@ -101,5 +102,20 @@ export class ApiClient {
   }
   readReceipt(form: FormData) {
     return this.request<{ data: ReceiptReading }>('POST', '/rateio/receipts/read', form);
+  }
+  /** Baixa o comprovante (rota autenticada) para o cache do aparelho e devolve o arquivo local. */
+  async downloadReceipt(paymentId: number): Promise<File> {
+    const dir = new Directory(Paths.cache, 'comprovantes', String(paymentId));
+    if (!dir.exists) dir.create({ intermediates: true });
+    try {
+      return await File.downloadFileAsync(`${normalizeBaseUrl(this.baseUrl)}/api/v1/rateio/payments/${paymentId}/receipt`, dir, {
+        idempotent: true,
+        headers: { ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}) },
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      if (msg.includes('401')) this.onUnauthorized();
+      throw new ApiError(msg.includes('404') ? 'Comprovante não disponível.' : 'Não foi possível baixar o comprovante.', 0);
+    }
   }
 }

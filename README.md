@@ -9,7 +9,7 @@ créditos, faturas e custos do sistema [`mirahy/geracao`](https://github.com/mir
 - **Unidades** — lista de UCs com saldo/custo/economia; toque para ver o dashboard individual.
 - **Geração** — histórico e lançamento da geração mensal das placas (requer permissão `geracao.editar`).
 - **Faturas** — faturas por UC (vencimento, pagamento, consumo, compensado, economia).
-- **Rateio** — situação devido × pago por UC/mês, lista de pagamentos, lançamento manual ou por comprovante (PDF/imagem lido pela API) e exclusão (segurar o item). Requer `pagamentos.ver` / `pagamentos.editar`.
+- **Rateio** — situação devido × pago por UC/mês, lista de pagamentos, lançamento manual ou por comprovante (PDF/imagem lido pela API), visualização do comprovante (baixado com o token e aberto no leitor/compartilhamento do aparelho) e exclusão (segurar o item). Requer `pagamentos.ver` / `pagamentos.editar`.
 - **Conta** (ícone 👤 no topo) — usuário e sair. Tema claro/escuro automático.
 
 ## Rodando

@@ -1,3 +1,4 @@
+import * as Sharing from 'expo-sharing';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Alert, FlatList, Pressable, ScrollView, Text, View } from 'react-native';
@@ -36,6 +37,20 @@ export default function Rateio() {
         },
       },
     ]);
+
+  const [opening, setOpening] = useState<number | null>(null);
+  const openReceipt = async (p: RateioPayment) => {
+    setOpening(p.id);
+    try {
+      const file = await api.downloadReceipt(p.id);
+      if (!(await Sharing.isAvailableAsync())) throw new Error('Este aparelho não consegue abrir o arquivo.');
+      await Sharing.shareAsync(file.uri, { mimeType: file.type || undefined, dialogTitle: 'Comprovante' });
+    } catch (e) {
+      Alert.alert('Comprovante', e instanceof Error ? e.message : 'Erro inesperado');
+    } finally {
+      setOpening(null);
+    }
+  };
 
   const tone = (s: RateioRow['status']) => { const k = statusTone(s); return k === 'muted' ? t.muted : t[k]; };
   const active = view === 'summary' ? summary : payments;
@@ -92,6 +107,11 @@ export default function Rateio() {
                 <Text style={{ color: t.muted, fontSize: 12 }}>
                   {item.source === 'comprovante' ? 'via comprovante' : 'lançamento manual'}{item.has_receipt ? ' · com comprovante' : ''}{can('pagamentos.editar') ? ' · segure para excluir' : ''}
                 </Text>
+                {item.has_receipt ? (
+                  <View style={{ marginTop: 6 }}>
+                    <Button title="Ver comprovante" variant="ghost" onPress={() => void openReceipt(item)} loading={opening === item.id} />
+                  </View>
+                ) : null}
               </Card>
             </Pressable>
           )}
