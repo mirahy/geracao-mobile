@@ -22,7 +22,7 @@ export default function Painel() {
   const dash = useAsync(() => api.dashboard({ unit_id: unitId, from }), [api, unitId, from, months.data]);
 
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: t.bg }}>
+    <SafeAreaView edges={[]} style={{ flex: 1, backgroundColor: t.bg }}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }} refreshControl={<RefreshControl refreshing={dash.loading} onRefresh={dash.reload} />}>
         <UnitFilter units={units.data?.data ?? []} value={unitId} onChange={setUnitId} />
         <ScrollView horizontal style={{ flexGrow: 0 }}>

@@ -1,5 +1,5 @@
 import Constants from 'expo-constants';
-import type { Dashboard, Generation, Invoice, MonthOption, Unit, User } from './types';
+import type { Dashboard, Generation, Invoice, MonthOption, RateioPayment, RateioRow, ReceiptReading, Unit, User } from './types';
 
 export class ApiError extends Error {
   constructor(
@@ -11,8 +11,8 @@ export class ApiError extends Error {
   }
 }
 
-/** URL padrão vem de app.json (extra.apiUrl) ou EXPO_PUBLIC_API_URL; o usuário pode trocá-la no login. */
-export const DEFAULT_API_URL: string =
+/** URL do servidor: EXPO_PUBLIC_API_URL (build/eas.json) ou extra.apiUrl do app.json. Não é configurável pelo usuário. */
+export const API_URL: string =
   process.env.EXPO_PUBLIC_API_URL ?? (Constants.expoConfig?.extra?.apiUrl as string | undefined) ?? 'http://10.0.2.2:8000';
 
 export function normalizeBaseUrl(url: string): string {
@@ -36,15 +36,16 @@ export class ApiClient {
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
     let res: Response;
+    const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
     try {
       res = await fetch(`${normalizeBaseUrl(this.baseUrl)}/api/v1${path}`, {
         method,
         headers: {
           Accept: 'application/json',
-          'Content-Type': 'application/json',
+          ...(isForm || body === undefined ? {} : { 'Content-Type': 'application/json' }),
           ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
         },
-        body: body === undefined ? undefined : JSON.stringify(body),
+        body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
       });
     } catch {
       throw new ApiError('Não foi possível conectar ao servidor. Verifique a URL e a conexão.', 0);
@@ -60,7 +61,7 @@ export class ApiClient {
   }
 
   login(email: string, password: string) {
-    return this.request<{ token: string; user: User }>('POST', '/login', { email, password, device_name: 'geracao-mobile' });
+    return this.request<{ token: string; expires_at: string | null; user: User }>('POST', '/login', { email, password, device_name: 'geracao-mobile' });
   }
   logout() {
     return this.request<null>('POST', '/logout');
@@ -85,5 +86,20 @@ export class ApiClient {
   }
   invoices(unitId?: number | null) {
     return this.request<{ data: Invoice[] }>('GET', `/invoices${buildQuery({ unit_id: unitId })}`);
+  }
+  rateioSummary(unitId?: number | null) {
+    return this.request<{ data: RateioRow[] }>('GET', `/rateio/summary${buildQuery({ unit_id: unitId })}`);
+  }
+  rateioPayments(unitId?: number | null) {
+    return this.request<{ data: RateioPayment[] }>('GET', `/rateio/payments${buildQuery({ unit_id: unitId })}`);
+  }
+  saveRateioPayment(form: FormData) {
+    return this.request<{ data: RateioPayment }>('POST', '/rateio/payments', form);
+  }
+  deleteRateioPayment(id: number) {
+    return this.request<null>('DELETE', `/rateio/payments/${id}`);
+  }
+  readReceipt(form: FormData) {
+    return this.request<{ data: ReceiptReading }>('POST', '/rateio/receipts/read', form);
   }
 }

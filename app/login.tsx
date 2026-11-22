@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ApiError, DEFAULT_API_URL } from '../src/api/client';
+import { ApiError } from '../src/api/client';
 import { Button, Field } from '../src/components/ui';
 import { useAuth } from '../src/lib/auth';
 import { useTheme } from '../src/theme';
@@ -9,7 +9,6 @@ import { useTheme } from '../src/theme';
 export default function Login() {
   const t = useTheme();
   const { signIn } = useAuth();
-  const [url, setUrl] = useState(DEFAULT_API_URL);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +18,7 @@ export default function Login() {
     setBusy(true);
     setError(null);
     try {
-      await signIn(url, email, password);
+      await signIn(email, password);
     } catch (e) {
       const first = e instanceof ApiError ? Object.values(e.errors ?? {})[0]?.[0] : undefined;
       setError(first ?? (e instanceof Error ? e.message : 'Falha ao entrar'));
@@ -37,11 +36,10 @@ export default function Login() {
             <Text style={{ color: t.text, fontSize: 24, fontWeight: '800' }}>Geração Solar</Text>
             <Text style={{ color: t.muted }}>Controle de geração, créditos e custos</Text>
           </View>
-          <Field label="Servidor" value={url} onChangeText={setUrl} autoCapitalize="none" autoCorrect={false} keyboardType="url" />
           <Field label="E-mail" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" autoComplete="email" />
           <Field label="Senha" value={password} onChangeText={setPassword} secureTextEntry autoComplete="password" onSubmitEditing={submit} />
           {error ? <Text style={{ color: t.bad }}>{error}</Text> : null}
-          <Button title="Entrar" onPress={submit} loading={busy} disabled={!email || !password || !url} />
+          <Button title="Entrar" onPress={submit} loading={busy} disabled={!email || !password} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

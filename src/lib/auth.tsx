@@ -1,14 +1,14 @@
 import * as SecureStore from 'expo-secure-store';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { ApiClient, DEFAULT_API_URL, normalizeBaseUrl } from '../api/client';
+import { API_URL, ApiClient } from '../api/client';
 import type { User } from '../api/types';
+import { isExpired, type Session } from './session';
 
 interface AuthState {
   ready: boolean;
   user: User | null;
   api: ApiClient;
-  baseUrl: string;
-  signIn: (baseUrl: string, email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   can: (permission: string) => boolean;
 }
@@ -16,15 +16,17 @@ interface AuthState {
 const KEY = 'geracao.session';
 const Ctx = createContext<AuthState | null>(null);
 
-interface Session { token: string; baseUrl: string; user: User }
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     SecureStore.getItemAsync(KEY)
-      .then((raw) => raw && setSession(JSON.parse(raw) as Session))
+      .then(async (raw) => {
+        const saved = raw ? (JSON.parse(raw) as Session) : null;
+        if (saved && !isExpired(saved)) setSession(saved);
+        else if (saved) await SecureStore.deleteItemAsync(KEY);
+      })
       .catch(() => {})
       .finally(() => setReady(true));
   }, []);
@@ -34,13 +36,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await SecureStore.deleteItemAsync(KEY).catch(() => {});
   }, []);
 
-  const baseUrl = session?.baseUrl ?? DEFAULT_API_URL;
-  const api = useMemo(() => new ApiClient(baseUrl, session?.token ?? null, () => void clear()), [baseUrl, session?.token, clear]);
+  const api = useMemo(() => new ApiClient(API_URL, session?.token ?? null, () => void clear()), [session?.token, clear]);
 
-  const signIn = useCallback(async (url: string, email: string, password: string) => {
-    const base = normalizeBaseUrl(url);
-    const res = await new ApiClient(base, null).login(email.trim(), password);
-    const next = { token: res.token, baseUrl: base, user: res.user };
+  const signIn = useCallback(async (email: string, password: string) => {
+    const res = await new ApiClient(API_URL, null).login(email.trim(), password);
+    const next: Session = { token: res.token, expiresAt: res.expires_at, user: res.user };
     await SecureStore.setItemAsync(KEY, JSON.stringify(next));
     setSession(next);
   }, []);
@@ -53,8 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const can = useCallback((p: string) => !!session?.user.permissions.includes(p), [session]);
 
   const value = useMemo<AuthState>(
-    () => ({ ready, user: session?.user ?? null, api, baseUrl, signIn, signOut, can }),
-    [ready, session, api, baseUrl, signIn, signOut, can],
+    () => ({ ready, user: session?.user ?? null, api, signIn, signOut, can }),
+    [ready, session, api, signIn, signOut, can],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

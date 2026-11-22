@@ -91,3 +91,43 @@ export interface MonthOption {
   key: string; // Y-m
   label: string;
 }
+
+export type RateioStatus = 'pending' | 'partial' | 'paid' | 'overpaid' | 'without_charge';
+
+export interface RateioRow {
+  unit_id: number;
+  unit: string;
+  month: string; // Y-m
+  due: number;
+  paid: number;
+  balance: number;
+  status: RateioStatus;
+  payments: number;
+}
+
+export interface RateioPayment {
+  id: number;
+  consumer_unit_id: number;
+  unit_name: string | null;
+  reference_month: string;
+  amount: number;
+  paid_at: string | null;
+  payer_name: string | null;
+  transaction_id: string | null;
+  source: 'manual' | 'comprovante';
+  notes: string | null;
+  has_receipt: boolean;
+  receipt_url: string | null;
+}
+
+export interface ReceiptReading {
+  readable: boolean;
+  ocr_enabled: boolean;
+  amount: number | null;
+  paid_at: string | null;
+  payer_name: string | null;
+  transaction_id: string | null;
+  already_registered: boolean;
+  suggested_unit_id: number | null;
+  suggested_month: string | null;
+}

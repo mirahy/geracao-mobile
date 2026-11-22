@@ -15,7 +15,7 @@ export default function Units() {
   const dash = useAsync(() => api.dashboard({}), [api]);
 
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: t.bg }}>
+    <SafeAreaView edges={[]} style={{ flex: 1, backgroundColor: t.bg }}>
       <FlatList
         contentContainerStyle={{ padding: 16, gap: 12 }}
         data={dash.data?.units ?? []}
