@@ -16,3 +16,15 @@ test('parseDecimal', () => {
   assert.equal(parseDecimal(''), null);
   assert.equal(parseDecimal('abc'), null);
 });
+
+import { maskBrDate, parseBrDate } from './format.ts';
+
+test('parseBrDate', () => {
+  assert.equal(parseBrDate('15/03/2026'), '2026-03-15');
+  assert.equal(parseBrDate('31/02/2026'), null);
+  assert.equal(parseBrDate('15/03'), null);
+});
+test('maskBrDate', () => {
+  assert.equal(maskBrDate('15032026'), '15/03/2026');
+  assert.equal(maskBrDate('1503'), '15/03');
+});

@@ -28,3 +28,21 @@ export function parseDecimal(input: string): number | null {
   const n = Number(normalized);
   return Number.isFinite(n) ? n : null;
 }
+
+/** "15/03/2026" (ou "15032026") => "2026-03-15"; devolve null se inválida. */
+export function parseBrDate(input: string): string | null {
+  const digits = input.replace(/\D/g, '');
+  if (digits.length !== 8) return null;
+  const d = Number(digits.slice(0, 2));
+  const m = Number(digits.slice(2, 4));
+  const y = Number(digits.slice(4));
+  const date = new Date(Date.UTC(y, m - 1, d));
+  if (date.getUTCFullYear() !== y || date.getUTCMonth() !== m - 1 || date.getUTCDate() !== d) return null;
+  return `${digits.slice(4)}-${digits.slice(2, 4)}-${digits.slice(0, 2)}`;
+}
+
+/** Máscara de digitação: "15032026" => "15/03/2026". */
+export function maskBrDate(input: string): string {
+  const d = input.replace(/\D/g, '').slice(0, 8);
+  return [d.slice(0, 2), d.slice(2, 4), d.slice(4)].filter(Boolean).join('/');
+}
