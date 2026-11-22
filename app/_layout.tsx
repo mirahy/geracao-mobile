@@ -21,6 +21,7 @@ function Gate() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="unit/[id]" options={{ headerShown: true, title: 'Unidade' }} />
       <Stack.Screen name="account" options={{ headerShown: true, title: 'Conta' }} />
+      <Stack.Screen name="profile" options={{ headerShown: true, title: 'Meu perfil' }} />
       <Stack.Screen name="admin" options={{ headerShown: false }} />
       <Stack.Screen name="generation/review" options={{ headerShown: true, title: 'Revisar importação' }} />
       <Stack.Screen name="rateio/new" options={{ headerShown: true, title: 'Lançar pagamento', presentation: 'modal' }} />

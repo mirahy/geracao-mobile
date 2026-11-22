@@ -11,6 +11,9 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   can: (permission: string) => boolean;
+  /** O usuário alcança alguma unidade geradora? (true enquanto não se sabe) */
+  hasGenerator: boolean;
+  updateUser: (user: User) => Promise<void>;
 }
 
 const KEY = 'geracao.session';
@@ -19,6 +22,7 @@ const Ctx = createContext<AuthState | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [ready, setReady] = useState(false);
+  const [hasGenerator, setHasGenerator] = useState(true);
 
   useEffect(() => {
     SecureStore.getItemAsync(KEY)
@@ -38,6 +42,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const api = useMemo(() => new ApiClient(API_URL, session?.token ?? null, () => void clear()), [session?.token, clear]);
 
+  useEffect(() => {
+    if (!session?.token) { setHasGenerator(true); return; }
+    api.units().then((r) => setHasGenerator(r.data.some((u) => u.role === 'generator'))).catch(() => setHasGenerator(true));
+  }, [api, session?.token]);
+
+  const updateUser = useCallback(async (user: User) => {
+    setSession((cur) => {
+      if (!cur) return cur;
+      const next = { ...cur, user };
+      void SecureStore.setItemAsync(KEY, JSON.stringify(next)).catch(() => {});
+      return next;
+    });
+  }, []);
+
   const signIn = useCallback(async (email: string, password: string) => {
     const res = await new ApiClient(API_URL, null).login(email.trim(), password);
     const next: Session = { token: res.token, expiresAt: res.expires_at, user: res.user };
@@ -53,8 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const can = useCallback((p: string) => !!session?.user.permissions.includes(p), [session]);
 
   const value = useMemo<AuthState>(
-    () => ({ ready, user: session?.user ?? null, api, signIn, signOut, can }),
-    [ready, session, api, signIn, signOut, can],
+    () => ({ ready, user: session?.user ?? null, api, signIn, signOut, can, hasGenerator, updateUser }),
+    [ready, session, api, signIn, signOut, can, hasGenerator, updateUser],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

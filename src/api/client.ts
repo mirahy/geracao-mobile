@@ -76,6 +76,12 @@ export class ApiClient {
   me() {
     return this.request<{ user: User }>('GET', '/me');
   }
+  updateProfile(p: { name: string; email: string }) {
+    return this.request<{ user: User }>('PUT', '/me', p);
+  }
+  updatePassword(p: { current_password: string; password: string; password_confirmation: string }) {
+    return this.request<null>('PUT', '/me/password', p);
+  }
   months() {
     return this.request<{ data: MonthOption[] }>('GET', '/months');
   }
@@ -184,6 +190,9 @@ export class ApiClient {
   }
   approveUnitRequest(id: number, canEdit: boolean) {
     return this.request<{ data: AccessRequest }>('POST', `/admin/unit-requests/${id}/approve`, { can_edit: canEdit });
+  }
+  bulkUnitRequests(p: { ids: number[]; action: 'approve' | 'reject'; can_edit?: boolean; note?: string | null }) {
+    return this.request<{ data: { done: number; skipped: number } }>('POST', '/admin/unit-requests/bulk', p);
   }
   rejectUnitRequest(id: number, note: string | null) {
     return this.request<{ data: AccessRequest }>('POST', `/admin/unit-requests/${id}/reject`, { note });

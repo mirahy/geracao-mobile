@@ -10,8 +10,8 @@ créditos, faturas e custos do sistema [`mirahy/geracao`](https://github.com/mir
 - **Geração** — histórico, lançamento manual, **importação da planilha diária (.xlsx)** do inversor com tela de **revisão** dos meses incompletos/divergentes, e exclusão (segurar o item). Requer `geracao.editar`.
 - **Faturas** — faturas por UC (vencimento, pagamento, consumo, compensado, economia) e **importação de PDFs** (faturas e demonstrativos; requer `documentos.importar`).
 - **Rateio** — situação devido × pago por UC/mês, lista de pagamentos, lançamento manual ou por comprovante (PDF/imagem lido pela API), visualização do comprovante (baixado com o token e aberto no leitor/compartilhamento do aparelho) e exclusão (segurar o item). Requer `pagamentos.ver` / `pagamentos.editar`.
-- **Conta** (ícone 👤 no topo) — usuário, **Administração** e sair. Tema claro/escuro automático.
-- **Administração** (conforme as permissões do perfil): **Usuários** (cadastro, perfis, acesso por unidade, liberar unidade solicitada), **Perfis e permissões**, **Solicitações de acesso** (aprovar/recusar), **Unidades consumidoras**, **Parcelas das placas** e **Importações** (histórico e exclusão).
+- **Conta** (ícone 👤 no topo) — usuário, **Editar meu perfil** (nome, e-mail e troca de senha), **Administração** e sair. As abas e seções só aparecem para quem tem a permissão correspondente (Geração também exige alcançar uma unidade geradora). Tema claro/escuro automático.
+- **Administração** (conforme as permissões do perfil): **Usuários** (cadastro, perfis, acesso por unidade, liberar unidade solicitada), **Perfis e permissões**, **Solicitações de acesso** (aprovar/recusar, uma a uma ou **em lote**), **Unidades consumidoras**, **Parcelas das placas** e **Importações** (histórico e exclusão).
 
 ## Rodando
 ```bash
