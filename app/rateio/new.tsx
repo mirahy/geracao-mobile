@@ -7,6 +7,7 @@ import { Button, Card, Field } from '../../src/components/ui';
 import { UnitFilter } from '../../src/components/Filters';
 import { fmtBrl, fmtDate, maskBrDate, parseBrDate, parseDecimal } from '../../src/lib/format';
 import { useAuth } from '../../src/lib/auth';
+import { filePart } from '../../src/lib/upload';
 import { useAsync } from '../../src/lib/useAsync';
 import { useTheme } from '../../src/theme';
 
@@ -14,7 +15,7 @@ type Picked = DocumentPicker.DocumentPickerAsset;
 
 function receiptForm(file: Picked): FormData {
   const form = new FormData();
-  form.append('receipt', { uri: file.uri, name: file.name, type: file.mimeType ?? 'application/octet-stream' } as unknown as Blob);
+  form.append('receipt', filePart(file, 'application/octet-stream'));
   return form;
 }
 

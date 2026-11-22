@@ -9,6 +9,7 @@ import { PeriodFilter } from '../../src/components/PeriodFilter';
 import { Button, Card, Field, State, Title, confirmDestructive, errorMessage } from '../../src/components/ui';
 import { fmtKwh, monthLabel, parseDecimal } from '../../src/lib/format';
 import { useAuth } from '../../src/lib/auth';
+import { filePart } from '../../src/lib/upload';
 import { useAsync } from '../../src/lib/useAsync';
 import { usePeriod } from '../../src/lib/usePeriod';
 import { useTheme } from '../../src/theme';
@@ -59,7 +60,7 @@ export default function Generation() {
     if (res.canceled || !res.assets[0]) return;
     const f = res.assets[0];
     const form = new FormData();
-    form.append('file', { uri: f.uri, name: f.name, type: f.mimeType ?? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' } as unknown as Blob);
+    form.append('file', filePart(f, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'));
     form.append('consumer_unit_id', String(target));
     setImporting(true);
     try {

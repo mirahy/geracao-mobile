@@ -8,6 +8,7 @@ import { Button, Card, State, errorMessage } from '../../src/components/ui';
 import { fmtBrl, fmtDate, fmtKwh, monthLabel } from '../../src/lib/format';
 import { useAuth } from '../../src/lib/auth';
 import { openInReader } from '../../src/lib/openFile';
+import { filePart } from '../../src/lib/upload';
 import { useAsync } from '../../src/lib/useAsync';
 import { usePeriod } from '../../src/lib/usePeriod';
 import { useTheme } from '../../src/theme';
@@ -37,7 +38,7 @@ export default function Invoices() {
     const res = await DocumentPicker.getDocumentAsync({ type: 'application/pdf', multiple: true, copyToCacheDirectory: true });
     if (res.canceled || res.assets.length === 0) return;
     const form = new FormData();
-    res.assets.forEach((f) => form.append('files[]', { uri: f.uri, name: f.name, type: 'application/pdf' } as unknown as Blob));
+    res.assets.forEach((f) => form.append('files[]', filePart(f, 'application/pdf')));
     setImporting(true);
     try {
       const { data } = await api.importDocuments(form);

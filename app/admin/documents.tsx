@@ -4,6 +4,7 @@ import { Alert, FlatList, Pressable, Text, View } from 'react-native';
 import { Button, Card, State, confirmDestructive, errorMessage } from '../../src/components/ui';
 import { fmtDate, monthLabel } from '../../src/lib/format';
 import { useAuth } from '../../src/lib/auth';
+import { filePart } from '../../src/lib/upload';
 import { useAsync } from '../../src/lib/useAsync';
 import { useFocusReload } from '../../src/lib/useFocusReload';
 import { useTheme } from '../../src/theme';
@@ -20,7 +21,7 @@ export default function Documents() {
     const res = await DocumentPicker.getDocumentAsync({ type: 'application/pdf', multiple: true, copyToCacheDirectory: true });
     if (res.canceled || res.assets.length === 0) return;
     const form = new FormData();
-    res.assets.forEach((f) => form.append('files[]', { uri: f.uri, name: f.name, type: 'application/pdf' } as unknown as Blob));
+    res.assets.forEach((f) => form.append('files[]', filePart(f, 'application/pdf')));
     setImporting(true);
     try {
       const { data } = await api.importDocuments(form);

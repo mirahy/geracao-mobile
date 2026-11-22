@@ -54,8 +54,11 @@ export class ApiClient {
         },
         body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
       });
-    } catch {
-      throw new ApiError('Não foi possível conectar ao servidor. Verifique a URL e a conexão.', 0);
+    } catch (e) {
+      const detail = e instanceof Error ? e.message : '';
+      // erro de rede de verdade (sem rota, DNS, timeout) x falha ao montar a requisição (ex.: arquivo ilegível)
+      const network = !detail || /network|failed to fetch|timed? ?out|connect|abort|offline/i.test(detail);
+      throw new ApiError(network ? 'Não foi possível conectar ao servidor. Verifique a conexão.' : `Não foi possível enviar a requisição: ${detail}`, 0);
     }
     if (res.status === 401 && this.token) {
       this.onUnauthorized();
